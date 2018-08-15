@@ -20,6 +20,23 @@ get '/' do
   return log_info("Great, your backend is set up. Now you can configure the Stripe example apps to point here.")
 end
 
+post '/ephemeral_keys/v2' do
+  stripe_version = params['api_version']
+  customer_id = params['customer_id']
+  key = Stripe::EphemeralKey.create(
+    {customer: customer_id},
+    {stripe_version: stripe_version}
+  )
+rescue Stripe::StripeError => e
+    status 402
+    return log_info("Error creating ephemeral key: #{e.message}")
+  end
+
+  content_type :json
+  status 200
+  key.to_json
+end
+
 post '/ephemeral_keys' do
   authenticate!
   begin
