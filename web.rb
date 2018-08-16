@@ -20,14 +20,17 @@ get '/' do
   return log_info("Great, your backend is set up. Now you can configure the Stripe example apps to point here.")
 end
 
+
+# this end point return key for the customer_id, however authentication is not done here (Shasin)
 post '/ephemeral_keys/v2' do
   stripe_version = params['api_version']
   customer_id = params['customer_id']
+  begin
   key = Stripe::EphemeralKey.create(
     {customer: customer_id},
     {stripe_version: stripe_version}
   )
-rescue Stripe::StripeError => e
+  rescue Stripe::StripeError => e
     status 402
     return log_info("Error creating ephemeral key: #{e.message}")
   end
@@ -54,8 +57,10 @@ post '/ephemeral_keys' do
   key.to_json
 end
 
+
+#Charge without authentication, please do authentication
 post '/charge' do
-  authenticate!
+  # authenticate!
   # Get the credit card details submitted
   payload = params
   if request.content_type.include? 'application/json' and params.empty?
